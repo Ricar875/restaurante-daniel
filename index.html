@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Restaurante de Daniel — Sistema de Gestión</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C8960C;
+    --gold-light: #F0C040;
+    --dark: #1A0A00;
+    --brown: #3D1F00;
+    --cream: #FFF8EC;
+    --red: #C0392B;
+    --green: #27AE60;
+    --orange: #E67E22;
+    --text: #2C1A00;
+    --card: #FFFDF6;
+    --shadow: 0 8px 32px rgba(200,150,12,0.13);
+    --radius: 18px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    position: fixed; left: 0; top: 0; bottom: 0; width: 240px;
+    background: var(--dark);
+    display: flex; flex-direction: column;
+    z-index: 100;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.25);
+  }
+  .sidebar-logo {
+    padding: 28px 20px 20px;
+    border-bottom: 1px solid rgba(200,150,12,0.2);
+    text-align: center;
+  }
+  .sidebar-logo .icon { font-size: 2.4rem; }
+  .sidebar-logo h1 {
+    font-family: 'Playfair Display', serif;
+    color: var(--gold-light);
+    font-size: 1.15rem;
+    line-height: 1.2;
+    margin-top: 6px;
+  }
+  .sidebar-logo p { color: rgba(255,255,255,0.4); font-size: 0.72rem; margin-top: 4px; }
+  .nav { flex: 1; padding: 16px 0; overflow-y: auto; }
+  .nav-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 13px 22px;
+    color: rgba(255,255,255,0.6);
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-left: 3px solid transparent;
+    position: relative;
+  }
+  .nav-item:hover { color: var(--gold-light); background: rgba(200,150,12,0.07); }
+  .nav-item.active {
+    color: var(--gold-light);
+    background: rgba(200,150,12,0.12);
+    border-left-color: var(--gold);
+  }
+  .nav-item .nav-icon { font-size: 1.2rem; width: 24px; text-align: center; }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--red);
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+  }
+  .sidebar-bottom {
+    padding: 16px 20px;
+    border-top: 1px solid rgba(200,150,12,0.15);
+  }
+  .whatsapp-btn {
+    display: flex; align-items: center; gap: 10px;
+    background: #25D366;
+    color: #fff;
+    padding: 11px 16px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .whatsapp-btn:hover { background: #1ebe59; transform: translateY(-1px); }
+
+  /* MAIN */
+  .main {
+    margin-left: 240px;
+    min-height: 100vh;
+    padding: 28px;
+  }
+  .page { display: none; animation: fadeIn 0.3s ease; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* HEADER */
+  .page-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 28px;
+  }
+  .page-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.85rem;
+    color: var(--brown);
+  }
+  .page-header p { color: #9C7A40; font-size: 0.9rem; margin-top: 2px; }
+  .btn {
+    padding: 10px 20px; border-radius: 10px; border: none;
+    font-family: 'Outfit', sans-serif; font-size: 0.88rem; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 7px;
+  }
+  .btn-gold { background: var(--gold); color: #fff; }
+  .btn-gold:hover { background: #B8860B; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(200,150,12,0.35); }
+  .btn-outline { background: transparent; border: 2px solid var(--gold); color: var(--gold); }
+  .btn-outline:hover { background: var(--gold); color: #fff; }
+  .btn-red { background: var(--red); color: #fff; }
+  .btn-green { background: var(--green); color: #fff; }
+
+  /* CARDS */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 28px; }
+  .stat-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 22px 20px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(200,150,12,0.12);
+    position: relative; overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  }
+  .stat-card.gold::before { background: var(--gold); }
+  .stat-card.green::before { background: var(--green); }
+  .stat-card.red::before { background: var(--red); }
+  .stat-card.orange::before { background: var(--orange); }
+  .stat-icon { font-size: 2rem; margin-bottom: 10px; }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; font-weight: 700;
+    color: var(--brown);
+  }
+  .stat-label { color: #9C7A40; font-size: 0.82rem; margin-top: 3px; }
+  .stat-sub { font-size: 0.78rem; color: var(--green); font-weight: 600; margin-top: 6px; }
+
+  /* GRID LAYOUT */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 22px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(200,150,12,0.10);
+  }
+  .card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem; color: var(--brown);
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  /* PEDIDOS DELIVERY */
+  .order-list { display: flex; flex-direction: column; gap: 12px; }
+  .order-item {
+    background: var(--cream);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 14px;
+    border: 1px solid rgba(200,150,12,0.12);
+    transition: all 0.2s;
+  }
+  .order-item:hover { box-shadow: 0 4px 16px rgba(200,150,12,0.12); }
+  .order-num {
+    background: var(--gold);
+    color: #fff;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-weight: 700; font-size: 0.85rem;
+    min-width: 44px; text-align: center;
+  }
+  .order-info { flex: 1; }
+  .order-info strong { font-size: 0.92rem; color: var(--brown); }
+  .order-info p { font-size: 0.78rem; color: #9C7A40; margin-top: 2px; }
+  .order-status {
+    padding: 5px 12px; border-radius: 20px;
+    font-size: 0.75rem; font-weight: 700;
+  }
+  .status-pending { background: #FFF3CD; color: #856404; }
+  .status-prep { background: #CCE5FF; color: #004085; }
+  .status-ready { background: #D4EDDA; color: #155724; }
+  .status-done { background: #E2E3E5; color: #383d41; }
+  .order-price { font-weight: 700; color: var(--gold); font-size: 1rem; min-width: 60px; text-align: right; }
+
+  /* MENU DEL DIA */
+  .menu-day-card {
+    background: linear-gradient(135deg, var(--dark) 0%, var(--brown) 100%);
+    border-radius: var(--radius);
+    padding: 28px;
+    color: white;
+    position: relative; overflow: hidden;
+    margin-bottom: 22px;
+  }
+  .menu-day-card::before {
+    content: '🍽️';
+    position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+    font-size: 5rem; opacity: 0.12;
+  }
+  .menu-day-card .date-badge {
+    background: var(--gold);
+    color: #fff;
+    font-size: 0.75rem; font-weight: 700;
+    padding: 4px 14px; border-radius: 20px;
+    display: inline-block; margin-bottom: 12px;
+  }
+  .menu-day-card h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem; margin-bottom: 8px;
+    color: var(--gold-light);
+  }
+  .menu-courses { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 14px; }
+  .menu-course {
+    background: rgba(255,255,255,0.08);
+    border-radius: 10px; padding: 10px 16px;
+    flex: 1; min-width: 140px;
+  }
+  .menu-course .course-label { font-size: 0.7rem; color: var(--gold-light); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+  .menu-course .course-name { font-size: 0.92rem; margin-top: 4px; color: #fff; }
+  .menu-price { font-size: 1.8rem; font-weight: 700; color: var(--gold-light); margin-top: 16px; }
+  .menu-price span { font-size: 0.85rem; color: rgba(255,255,255,0.5); font-weight: 400; }
+
+  /* PLATOS ESPECIALES */
+  .especiales-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .plato-card {
+    background: var(--card);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(200,150,12,0.1);
+    transition: all 0.25s;
+  }
+  .plato-card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(200,150,12,0.2); }
+  .plato-img {
+    height: 130px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 4.5rem;
+    position: relative;
+  }
+  .plato-img.bg1 { background: linear-gradient(135deg, #FFF0D6, #FFE4B5); }
+  .plato-img.bg2 { background: linear-gradient(135deg, #FFE8E8, #FFDADA); }
+  .plato-img.bg3 { background: linear-gradient(135deg, #E8F5E9, #C8E6C9); }
+  .plato-img.bg4 { background: linear-gradient(135deg, #E3F2FD, #BBDEFB); }
+  .plato-img.bg5 { background: linear-gradient(135deg, #FFF3E0, #FFE0B2); }
+  .plato-img.bg6 { background: linear-gradient(135deg, #F3E5F5, #E1BEE7); }
+  .plato-badge {
+    position: absolute; top: 10px; right: 10px;
+    background: var(--gold);
+    color: #fff; font-size: 0.65rem; font-weight: 700;
+    padding: 3px 8px; border-radius: 8px;
+  }
+  .plato-info { padding: 14px; }
+  .plato-info h4 { font-size: 0.95rem; color: var(--brown); font-weight: 600; }
+  .plato-info p { font-size: 0.75rem; color: #9C7A40; margin-top: 3px; }
+  .plato-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+  .plato-price { font-weight: 700; color: var(--gold); font-size: 1.05rem; }
+  .add-btn {
+    background: var(--dark); color: var(--gold);
+    border: none; border-radius: 8px;
+    padding: 5px 12px; font-size: 0.8rem; font-weight: 600;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .add-btn:hover { background: var(--gold); color: #fff; }
+
+  /* MESAS */
+  .mesas-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+  .mesa-card {
+    border-radius: 14px;
+    padding: 18px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    border: 2px solid transparent;
+  }
+  .mesa-card:hover { transform: scale(1.04); }
+  .mesa-card.libre { background: #E8F5E9; border-color: #A5D6A7; }
+  .mesa-card.ocupada { background: #FFE8E8; border-color: #FFCDD2; }
+  .mesa-card.reservada { background: #FFF3E0; border-color: #FFCC02; }
+  .mesa-icon { font-size: 2.2rem; margin-bottom: 8px; }
+  .mesa-num { font-weight: 700; font-size: 1rem; color: var(--brown); }
+  .mesa-estado { font-size: 0.72rem; font-weight: 600; margin-top: 3px; }
+  .mesa-card.libre .mesa-estado { color: var(--green); }
+  .mesa-card.ocupada .mesa-estado { color: var(--red); }
+  .mesa-card.reservada .mesa-estado { color: var(--orange); }
+  .mesa-info { font-size: 0.7rem; color: #9C7A40; margin-top: 4px; }
+
+  /* DÉBITOS */
+  .debito-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(200,150,12,0.1);
+  }
+  .debito-item:last-child { border-bottom: none; }
+  .debito-avatar {
+    width: 42px; height: 42px;
+    background: linear-gradient(135deg, var(--gold), var(--brown));
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .debito-info { flex: 1; }
+  .debito-info strong { font-size: 0.9rem; color: var(--brown); }
+  .debito-info p { font-size: 0.75rem; color: #9C7A40; }
+  .debito-amount { font-weight: 700; font-size: 1.05rem; color: var(--red); }
+  .debito-days { font-size: 0.72rem; color: #9C7A40; text-align: right; }
+  .pay-btn {
+    background: var(--green); color: #fff;
+    border: none; border-radius: 8px;
+    padding: 6px 12px; font-size: 0.75rem; font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* FIDELIDAD */
+  .fidelidad-hero {
+    background: linear-gradient(135deg, var(--gold) 0%, #8B6914 100%);
+    border-radius: var(--radius);
+    padding: 30px;
+    color: #fff;
+    text-align: center;
+    margin-bottom: 22px;
+    position: relative; overflow: hidden;
+  }
+  .fidelidad-hero::before {
+    content: '⭐';
+    position: absolute; font-size: 8rem; opacity: 0.08;
+    top: 50%; right: 20px; transform: translateY(-50%);
+  }
+  .fidelidad-hero h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem; margin-bottom: 8px;
+  }
+  .fidelidad-hero p { opacity: 0.85; font-size: 0.9rem; }
+  .fidelidad-hero .prize {
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px; padding: 14px 20px;
+    margin-top: 16px; font-size: 1.05rem; font-weight: 600;
+  }
+  .cliente-fidelidad {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 0; border-bottom: 1px solid rgba(200,150,12,0.1);
+  }
+  .cliente-fidelidad:last-child { border-bottom: none; }
+  .fid-avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #FFD700, #B8860B);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .fid-info { flex: 1; }
+  .fid-info strong { font-size: 0.9rem; color: var(--brown); }
+  .progress-bar {
+    background: #EFE0B0;
+    border-radius: 10px; height: 8px;
+    margin-top: 6px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 10px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    transition: width 0.5s ease;
+  }
+  .fid-days { font-size: 0.75rem; color: #9C7A40; margin-top: 3px; }
+  .fid-badge {
+    padding: 5px 12px; border-radius: 20px;
+    font-size: 0.72rem; font-weight: 700;
+  }
+  .fid-badge.gold { background: #FFF3CD; color: #856404; }
+  .fid-badge.premio { background: #D4EDDA; color: #155724; }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 200;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 32px;
+    max-width: 480px; width: 90%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: modalIn 0.3s ease;
+  }
+  @keyframes modalIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .modal h3 { font-family: 'Playfair Display', serif; font-size: 1.3rem; margin-bottom: 20px; color: var(--brown); }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--brown); margin-bottom: 6px; }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%; padding: 10px 14px;
+    border: 1.5px solid rgba(200,150,12,0.25);
+    border-radius: 10px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.88rem;
+    background: var(--cream);
+    color: var(--text);
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    outline: none; border-color: var(--gold);
+  }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+  .close-modal { position: absolute; right: 20px; top: 20px; background: none; border: none; font-size: 1.3rem; cursor: pointer; color: #9C7A40; }
+
+  /* HEADER TOP */
+  .top-bar {
+    background: var(--dark);
+    padding: 14px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 50;
+    margin: -28px -28px 28px;
+  }
+  .top-bar .greeting { color: rgba(255,255,255,0.7); font-size: 0.88rem; }
+  .top-bar .greeting strong { color: var(--gold-light); }
+  .top-actions { display: flex; gap: 10px; align-items: center; }
+  .notif-btn {
+    background: rgba(200,150,12,0.15); border: none;
+    color: var(--gold-light); width: 38px; height: 38px;
+    border-radius: 10px; font-size: 1.1rem;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .notif-dot {
+    position: absolute; top: 6px; right: 6px;
+    width: 8px; height: 8px; background: var(--red);
+    border-radius: 50%;
+  }
+  .user-chip {
+    background: rgba(200,150,12,0.15);
+    color: var(--gold-light);
+    padding: 7px 14px; border-radius: 10px;
+    font-size: 0.82rem; font-weight: 600;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* SCROLL */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(200,150,12,0.3); border-radius: 3px; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--dark); color: var(--gold-light);
+    padding: 12px 20px; border-radius: 12px;
+    font-size: 0.88rem; font-weight: 500;
+    display: none; z-index: 999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    animation: slideUp 0.3s ease;
+  }
+  .toast.show { display: block; }
+  @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+  /* WHATSAPP FLOAT */
+  .wa-float {
+    position: fixed; bottom: 24px; left: 260px;
+    background: #25D366; color: #fff;
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 20px rgba(37,211,102,0.4);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    z-index: 99;
+  }
+  .wa-float:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(37,211,102,0.5); }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .especiales-grid { grid-template-columns: repeat(2, 1fr); }
+    .mesas-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  .section-title-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .section-title-bar h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem; color: var(--brown);
+  }
+
+  .divider {
+    height: 1px; background: rgba(200,150,12,0.15);
+    margin: 22px 0;
+  }
+  .tag {
+    display: inline-block;
+    padding: 3px 10px; border-radius: 8px;
+    font-size: 0.72rem; font-weight: 600;
+    margin-right: 6px;
+  }
+  .tag-hot { background: #FFE8E8; color: var(--red); }
+  .tag-new { background: #E8F5E9; color: var(--green); }
+  .tag-pop { background: #FFF3CD; color: #856404; }
+
+  /* Chart mini */
+  .mini-chart { display: flex; align-items: flex-end; gap: 6px; height: 60px; margin-top: 12px; }
+  .mini-bar {
+    flex: 1; border-radius: 4px 4px 0 0;
+    background: linear-gradient(180deg, var(--gold-light), var(--gold));
+    min-height: 8px; transition: height 0.5s;
+  }
+  .chart-labels { display: flex; gap: 6px; margin-top: 4px; }
+  .chart-labels span { flex: 1; text-align: center; font-size: 0.65rem; color: #9C7A40; }
+
+  .empty-state {
+    text-align: center; padding: 30px;
+    color: #C4A44A; font-size: 0.88rem;
+  }
+  .empty-state .emoji { font-size: 2.5rem; margin-bottom: 10px; }
+
+  /* TICKET */
+  .ticket-preview {
+    background: #fff;
+    border: 2px dashed #CCC;
+    border-radius: 4px;
+    padding: 24px 20px;
+    max-width: 320px;
+    margin: 0 auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    color: #111;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  }
+  .ticket-preview .tk-logo {
+    text-align: center; font-size: 1.5rem;
+    border-bottom: 1px dashed #999; padding-bottom: 12px; margin-bottom: 12px;
+  }
+  .ticket-preview .tk-title {
+    text-align: center; font-weight: 700; font-size: 1rem;
+    letter-spacing: 1px; margin-bottom: 2px;
+  }
+  .ticket-preview .tk-sub { text-align: center; font-size: 0.72rem; color: #555; margin-bottom: 12px; }
+  .ticket-preview .tk-line { display: flex; justify-content: space-between; padding: 3px 0; }
+  .ticket-preview .tk-divider { border-top: 1px dashed #999; margin: 10px 0; }
+  .ticket-preview .tk-total { font-weight: 700; font-size: 1.05rem; }
+  .ticket-preview .tk-footer { text-align: center; font-size: 0.72rem; color: #777; margin-top: 14px; padding-top: 12px; border-top: 1px dashed #999; }
+
+  @media print {
+    body * { visibility: hidden; }
+    #print-area, #print-area * { visibility: visible; }
+    #print-area { position: fixed; top: 0; left: 0; width: 80mm; }
+    .sidebar, .top-bar, .wa-float { display: none !important; }
+  }
+
+  /* REPORTE */
+  .reporte-kpi { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 24px; }
+  .kpi-box {
+    background: var(--card);
+    border-radius: 14px; padding: 20px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(200,150,12,0.1);
+    text-align: center;
+  }
+  .kpi-box .kpi-icon { font-size: 2rem; margin-bottom: 8px; }
+  .kpi-box .kpi-val { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--brown); font-weight: 700; }
+  .kpi-box .kpi-lbl { font-size: 0.78rem; color: #9C7A40; margin-top: 3px; }
+  .kpi-box .kpi-trend { font-size: 0.75rem; font-weight: 600; margin-top: 6px; }
+  .kpi-box .up { color: var(--green); }
+  .kpi-box .down { color: var(--red); }
+
+  .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 120px; padding: 0 4px; }
+  .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .bar-col {
+    width: 100%; border-radius: 6px 6px 0 0;
+    background: linear-gradient(180deg, var(--gold-light), var(--gold));
+    min-height: 6px;
+    position: relative; cursor: pointer; transition: opacity 0.2s;
+  }
+  .bar-col:hover { opacity: 0.8; }
+  .bar-col.highlight { background: linear-gradient(180deg, #FFD700, #B8860B); }
+  .bar-label { font-size: 0.65rem; color: #9C7A40; }
+  .bar-val { font-size: 0.7rem; font-weight: 700; color: var(--brown); }
+
+  .top-platos { display: flex; flex-direction: column; gap: 10px; }
+  .top-plato-item { display: flex; align-items: center; gap: 12px; }
+  .top-plato-rank {
+    width: 28px; height: 28px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 0.8rem; flex-shrink: 0;
+  }
+  .rank-1 { background: #FFD700; color: #5A3E00; }
+  .rank-2 { background: #C0C0C0; color: #333; }
+  .rank-3 { background: #CD7F32; color: #fff; }
+  .rank-other { background: var(--cream); color: #9C7A40; border: 1px solid rgba(200,150,12,0.2); }
+  .top-plato-info { flex: 1; }
+  .top-plato-info strong { font-size: 0.88rem; color: var(--brown); }
+  .top-plato-bar { background: #EFE0B0; border-radius: 4px; height: 6px; margin-top: 4px; }
+  .top-plato-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--gold), var(--gold-light)); }
+  .top-plato-num { font-size: 0.82rem; font-weight: 700; color: var(--gold); }
+
+  .reporte-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .reporte-table th {
+    background: var(--dark); color: var(--gold-light);
+    padding: 10px 14px; text-align: left; font-weight: 600; font-size: 0.78rem;
+  }
+  .reporte-table td { padding: 10px 14px; border-bottom: 1px solid rgba(200,150,12,0.1); }
+  .reporte-table tr:hover td { background: rgba(200,150,12,0.04); }
+  .reporte-table .positivo { color: var(--green); font-weight: 600; }
+  .reporte-table .negativo { color: var(--red); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="icon">🍽️</div>
+    <h1>Restaurante<br>de Daniel</h1>
+    <p>Sistema de Gestión • Lima, Perú</p>
+  </div>
+  <div class="nav">
+    <div class="nav-item active" onclick="showPage('dashboard')">
+      <span class="nav-icon">📊</span> Panel Principal
+    </div>
+    <div class="nav-item" onclick="showPage('delivery')">
+      <span class="nav-icon">🛵</span> Pedidos Delivery
+      <span class="nav-badge">5</span>
+    </div>
+    <div class="nav-item" onclick="showPage('menu')">
+      <span class="nav-icon">📋</span> Menú del Día
+    </div>
+    <div class="nav-item" onclick="showPage('especiales')">
+      <span class="nav-icon">⭐</span> Platos Especiales
+    </div>
+    <div class="nav-item" onclick="showPage('mesas')">
+      <span class="nav-icon">🪑</span> Pedidos Mesas
+    </div>
+    <div class="nav-item" onclick="showPage('debitos')">
+      <span class="nav-icon">💳</span> Débitos Clientes
+    </div>
+    <div class="nav-item" onclick="showPage('fidelidad')">
+      <span class="nav-icon">🏆</span> Plan Fidelidad
+    </div>
+    <div class="nav-item" onclick="showPage('tickets')">
+      <span class="nav-icon">🧾</span> Imprimir Ticket
+    </div>
+    <div class="nav-item" onclick="showPage('reporte')">
+      <span class="nav-icon">📈</span> Reporte Mensual
+    </div>
+  </div>
+  <div class="sidebar-bottom">
+    <a href="https://wa.me/51913891049" target="_blank" class="whatsapp-btn">
+      <span>💬</span> +51 913 891 049
+    </a>
+  </div>
+</nav>
+
+<!-- FLOAT WA -->
+<a href="https://wa.me/51913891049" target="_blank" class="wa-float" title="WhatsApp">💬</a>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="top-bar">
+    <div class="greeting">Bienvenido, <strong>Daniel</strong> 👨‍🍳 — Martes 19 Mayo 2026</div>
+    <div class="top-actions">
+      <button class="notif-btn" onclick="showToast('3 nuevos pedidos pendientes! 🛵')">
+        🔔 <span class="notif-dot"></span>
+      </button>
+      <div class="user-chip">👤 Daniel Admin</div>
+    </div>
+  </div>
+
+  <!-- ===== DASHBOARD ===== -->
+  <div id="dashboard" class="page active">
+    <div class="page-header">
+      <div>
+        <h2>Panel Principal</h2>
+        <p>Resumen del día — Hoy estás vendiendo muy bien 🔥</p>
+      </div>
+      <button class="btn btn-gold" onclick="showToast('Reporte del día generado! 📄')">📄 Reporte Diario</button>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card gold">
+        <div class="stat-icon">💰</div>
+        <div class="stat-num">S/. 1,284</div>
+        <div class="stat-label">Ventas de hoy</div>
+        <div class="stat-sub">▲ +18% vs ayer</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon">🛵</div>
+        <div class="stat-num">23</div>
+        <div class="stat-label">Pedidos delivery</div>
+        <div class="stat-sub">5 en camino ahora</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-icon">🪑</div>
+        <div class="stat-num">8/15</div>
+        <div class="stat-label">Mesas ocupadas</div>
+        <div class="stat-sub">3 reservadas para esta noche</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-icon">💳</div>
+        <div class="stat-num">S/. 340</div>
+        <div class="stat-label">Débitos pendientes</div>
+        <div class="stat-sub">4 clientes con saldo</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>📈 Ventas esta semana</h3>
+        <div class="mini-chart">
+          <div class="mini-bar" style="height:40%"></div>
+          <div class="mini-bar" style="height:65%"></div>
+          <div class="mini-bar" style="height:50%"></div>
+          <div class="mini-bar" style="height:80%"></div>
+          <div class="mini-bar" style="height:55%"></div>
+          <div class="mini-bar" style="height:90%"></div>
+          <div class="mini-bar" style="height:100%;background:linear-gradient(180deg,var(--gold-light),var(--gold));"></div>
+        </div>
+        <div class="chart-labels">
+          <span>L</span><span>M</span><span>X</span><span>J</span><span>V</span><span>S</span><span>D</span>
+        </div>
+      </div>
+      <div class="card">
+        <h3>🏆 Plato más pedido hoy</h3>
+        <div style="text-align:center;padding:14px 0;">
+          <div style="font-size:4rem">🍲</div>
+          <div style="font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--brown);margin-top:8px">Lomo Saltado</div>
+          <div style="color:#9C7A40;font-size:0.85rem;margin-top:4px">Pedido 47 veces hoy</div>
+          <div style="background:var(--cream);border-radius:10px;padding:8px 16px;display:inline-block;margin-top:12px">
+            <span style="color:var(--gold);font-weight:700;font-size:1.1rem">S/. 18.00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section-title-bar">
+      <h3>🛵 Últimos pedidos delivery</h3>
+      <button class="btn btn-outline" onclick="showPage('delivery')">Ver todos →</button>
+    </div>
+    <div class="order-list">
+      <div class="order-item">
+        <div class="order-num">#047</div>
+        <div class="order-info">
+          <strong>María García</strong>
+          <p>Lomo Saltado + Chicha Morada — Jr. Bolívar 345</p>
+        </div>
+        <div class="order-status status-prep">En preparación</div>
+        <div class="order-price">S/. 24</div>
+      </div>
+      <div class="order-item">
+        <div class="order-num">#046</div>
+        <div class="order-info">
+          <strong>Carlos Ramos</strong>
+          <p>Ají de Gallina + Arroz — Av. Lima 120</p>
+        </div>
+        <div class="order-status status-ready">Listo 🟢</div>
+        <div class="order-price">S/. 22</div>
+      </div>
+      <div class="order-item">
+        <div class="order-num">#045</div>
+        <div class="order-info">
+          <strong>Rosa Huamán</strong>
+          <p>Menú del día x2 — Jr. Cusco 89</p>
+        </div>
+        <div class="order-status status-pending">Pendiente</div>
+        <div class="order-price">S/. 26</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DELIVERY ===== -->
+  <div id="delivery" class="page">
+    <div class="page-header">
+      <div>
+        <h2>Pedidos Delivery</h2>
+        <p>5 pedidos activos en este momento</p>
+      </div>
+      <button class="btn btn-gold" onclick="openModal('modal-nuevo-pedido')">+ Nuevo Pedido</button>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card gold"><div class="stat-icon">🕐</div><div class="stat-num">3</div><div class="stat-label">Pendientes</div></div>
+      <div class="stat-card orange"><div class="stat-icon">👨‍🍳</div><div class="stat-num">5</div><div class="stat-label">En preparación</div></div>
+      <div class="stat-card green"><div class="stat-icon">🛵</div><div class="stat-num">4</div><div class="stat-label">En camino</div></div>
+      <div class="stat-card" style="border-top:4px solid #9C7A40"><div class="stat-icon">✅</div><div class="stat-num">11</div><div class="stat-label">Entregados hoy</div></div>
+    </div>
+
+    <div class="card">
+      <div class="section-title-bar">
+        <h3>📋 Todos los pedidos de hoy</h3>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline" style="padding:6px 14px;font-size:0.8rem" onclick="showToast('Filtrando por estado...')">Filtrar</button>
+        </div>
+      </div>
+      <div class="order-list">
+        <div class="order-item">
+          <div class="order-num">#047</div>
+          <div class="order-info">
+            <strong>María García</strong>
+            <p>📍 Jr. Bolívar 345 | 🕐 12:34 | 📞 987654321</p>
+            <p style="margin-top:4px">Lomo Saltado + Chicha Morada</p>
+          </div>
+          <div class="order-status status-prep">En preparación</div>
+          <div class="order-price">S/. 24</div>
+          <button class="btn btn-green" style="padding:6px 12px;font-size:0.75rem" onclick="showToast('Pedido #047 marcado como listo! ✅')">✓ Listo</button>
+        </div>
+        <div class="order-item">
+          <div class="order-num">#046</div>
+          <div class="order-info">
+            <strong>Carlos Ramos</strong>
+            <p>📍 Av. Lima 120 | 🕐 12:20 | 📞 976543210</p>
+            <p style="margin-top:4px">Ají de Gallina + Arroz blanco</p>
+          </div>
+          <div class="order-status status-ready">Listo 🟢</div>
+          <div class="order-price">S/. 22</div>
+          <button class="btn btn-gold" style="padding:6px 12px;font-size:0.75rem" onclick="showToast('Pedido #046 enviado a delivery! 🛵')">🛵 Enviar</button>
+        </div>
+        <div class="order-item">
+          <div class="order-num">#045</div>
+          <div class="order-info">
+            <strong>Rosa Huamán</strong>
+            <p>📍 Jr. Cusco 89 | 🕐 12:10 | 📞 965432109</p>
+            <p style="margin-top:4px">Menú del día x2 (almuerzo)</p>
+          </div>
+          <div class="order-status status-pending">Pendiente</div>
+          <div class="order-price">S/. 26</div>
+          <button class="btn" style="background:#CCE5FF;color:#004085;padding:6px 12px;font-size:0.75rem" onclick="showToast('Preparando pedido #045 👨‍🍳')">👨‍🍳 Preparar</button>
+        </div>
+        <div class="order-item">
+          <div class="order-num">#044</div>
+          <div class="order-info">
+            <strong>Juan Pérez</strong>
+            <p>📍 Calle Arequipa 55 | 🕐 11:58 | 📞 954321098</p>
+            <p style="margin-top:4px">Ceviche especial + Inca Kola</p>
+          </div>
+          <div class="order-status" style="background:#E8F5E9;color:var(--green)">En camino 🛵</div>
+          <div class="order-price">S/. 32</div>
+          <button class="btn" style="background:var(--green);color:#fff;padding:6px 12px;font-size:0.75rem" onclick="showToast('Pedido #044 entregado! ✅')">✅ Entregado</button>
+        </div>
+        <div class="order-item">
+          <div class="order-num">#043</div>
+          <div class="order-info">
+            <strong>Ana Torres</strong>
+            <p>📍 Jr. Moquegua 78 | 🕐 11:45 | 📞 943210987</p>
+            <p style="margin-top:4px">Arroz con leche + Mazamorra</p>
+          </div>
+          <div class="order-status status-done">Entregado ✅</div>
+          <div class="order-price">S/. 15</div>
+          <span style="font-size:0.75rem;color:#9C7A40">Pagado</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MENÚ DEL DÍA ===== -->
+  <div id="menu" class="page">
+    <div class="page-header">
+      <div>
+        <h2>Menú del Día</h2>
+        <p>Gestiona el menú diario del restaurante</p>
+      </div>
+      <button class="btn btn-gold" onclick="openModal('modal-menu')">✏️ Editar Menú</button>
+    </div>
+
+    <div class="menu-day-card">
+      <div class="date-badge">📅 Martes 19 Mayo 2026</div>
+      <h3>Menú del Día — Almuerzo</h3>
+      <div class="menu-courses">
+        <div class="menu-course">
+          <div class="course-label">🥣 Entrada</div>
+          <div class="course-name">Sopa de Pollo con fideos</div>
+        </div>
+        <div class="menu-course">
+          <div class="course-label">🍲 Plato de fondo</div>
+          <div class="course-name">Lomo Saltado con arroz</div>
+        </div>
+        <div class="menu-course">
+          <div class="course-label">🥤 Bebida</div>
+          <div class="course-name">Chicha Morada (1L)</div>
+        </div>
+        <div class="menu-course">
+          <div class="course-label">🍮 Postre</div>
+          <div class="course-name">Arroz con leche</div>
+        </div>
+      </div>
+      <div class="menu-price">S/. 13.00 <span>por persona · incluye todo</span></div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>📊 Estadísticas del menú</h3>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:0.88rem">Menús vendidos hoy</span>
+            <strong style="color:var(--gold)">67 platos</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:0.88rem">Ingresos por menú</span>
+            <strong style="color:var(--green)">S/. 871</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:0.88rem">Menús para delivery</span>
+            <strong style="color:var(--orange)">23 pedidos</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:0.88rem">Menús en mesa</span>
+            <strong style="color:var(--brown)">44 en local</strong>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>📋 Menú de mañana (Miércoles)</h3>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="background:var(--cream);border-radius:10px;padding:10px 14px">
+            <div style="font-size:0.72rem;color:#9C7A40;font-weight:600">ENTRADA</div>
+            <div style="font-size:0.88rem;margin-top:3px">Caldo de gallina</div>
+          </div>
+          <div style="background:var(--cream);border-radius:10px;padding:10px 14px">
+            <div style="font-size:0.72rem;color:#9C7A40;font-weight:600">PLATO DE FONDO</div>
+            <div style="font-size:0.88rem;margin-top:3px">Ají de Gallina con arroz</div>
+          </div>
+          <div style="background:var(--cream);border-radius:10px;padding:10px 14px">
+            <div style="font-size:0.72rem;color:#9C7A40;font-weight:600">BEBIDA + POSTRE</div>
+            <div style="font-size:0.88rem;margin-top:3px">Limonada + Mazamorra morada</div>
+          </div>
+        </div>
+        <button class="btn btn-outline" style="width:100%;margin-top:14px;justify-content:center" onclick="showToast('Menú del miércoles guardado ✅')">Guardar menú</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PLATOS ESPECIALES ===== -->
+  <div id="especiales" class="page">
+    <div class="page-header">
+      <div>
+        <h2>Platos Especiales</h2>
+        <p>Nuestra carta especial del restaurante</p>
+      </div>
+      <button class="btn btn-gold" onclick="openModal('modal-plato')">+ Agregar Plato</button>
+    </div>
+
+    <div class="especiales-grid">
+      <div class="plato-card">
+        <div class="plato-img bg2">
+          🍲
+          <span class="plato-badge">🔥 Top 1</span>
+        </div>
+        <div class="plato-info">
+          <div><span class="tag tag-hot">Más pedido</span></div>
+          <h4>Lomo Saltado</h4>
+          <p>Tira de lomo fino, tomate, cebolla, ají amarillo, papas fritas</p>
+          <div class="plato-footer">
+            <span class="plato-price">S/. 18.00</span>
+            <button class="add-btn" onclick="showToast('Lomo Saltado agregado al pedido 🍲')">+ Pedir</button>
+          </div>
+        </div>
+      </div>
+      <div class="plato-card">
+        <div class="plato-img bg4">🐟</div>
+        <div class="plato-info">
+          <div><span class="tag tag-pop">Popular</span></div>
+          <h4>Ceviche Especial</h4>
+          <p>Pescado fresco, limón, ají limo, cebolla roja, choclo, camote</p>
+          <div class="plato-footer">
+            <span class="plato-price">S/. 22.00</span>
+            <button class="add-btn" onclick="showToast('Ceviche Especial agregado! 🐟')">+ Pedir</button>
+          </div>
+        </div>
+      </div>
+      <div class="plato-card">
+        <div class="plato-img bg1">🍗</div>
+        <div class="plato-info">
+          <div><span class="tag tag-pop">Popular</span></div>
+          <h4>Ají de Gallina</h4>
+          <p>Gallina deshilachada, ají amarillo, pan, nueces, arroz blanco</p>
+          <div class="plato-footer">
+            <span class="plato-price">S/. 16.00</span>
+            <button class="add-btn" onclick="showToast('Ají de Gallina agregado! 🍗')">+ Pedir</button>
+          </div>
+        </div>
+      </div>
+      <div class="plato-card">
+        <div class="plato-img bg3">🦐</div>
+        <div class="plato-info">
+          <div><span class="tag tag-new">Nuevo</span></div>
+          <h4>Arroz con Mariscos</h4>
+          <p>Camarones, calamares, conchas, arroz al wok, ají panca</p>
+          <div class="plato-footer">
+            <span class="plato-price">S/. 28.00</span>
+            <button class="add-btn" onclick="showToast('Arroz con Mariscos agregado! 🦐')">+ Pedir</button>
+          </div>
+        </div>
+      </div>
+      <div class="plato-card">
+        <div class="plato-img bg5">🥩</div>
+        <div class="plato-info">
+          <div><span class="tag tag-hot">Especial</span></div>
+          <h4>Anticucho de Corazón</h4>
+          <p>Corazón de res marinado, ají panca, comino, choclo, papa</p>
+          <div class="plato-footer">
+            <span class="plato-price">S/. 20.00</span>
+            <button class="add-btn" onclick="showToast('Anticuchos agregados! 🥩')">+ Pedir</button>
+          </div>
+        </div>
+      </div>
+      <div class="plato-card">
+        <div class="plato-img bg6">🥘</div>
+        <div class="plato-info">
+          <div><span class="tag tag-new">Nuevo</span></div>
+          <h4>Seco de Cabrito</h4>
+          <p>Cabrito al cilantro, frijoles, yuca, arroz blanco, salsa criolla</p>
+          <div class="plato-footer">
+            <span class="plato-price">S/. 24.00</span>
+            <button class="add-btn" onclick="showToast('Seco de Cabrito agregado! 🥘')">+ Pedir</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MESAS ===== -->
+  <div id="mesas" class="page">
+    <div class="page-header">
+      <div>
+        <h2>Pedidos por Mesa</h2>
+        <p>Control en tiempo real de las mesas del restaurante</p>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-outline" onclick="showToast('Vista actualizada ✅')">🔄 Actualizar</button>
+        <button class="btn btn-gold" onclick="openModal('modal-reserva')">+ Reservar Mesa</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:16px;margin-bottom:20px">
+      <div style="display:flex;align-items:center;gap:6px;font-size:0.82rem"><div style="width:14px;height:14px;background:#A5D6A7;border-radius:4px"></div> Libre (7)</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:0.82rem"><div style="width:14px;height:14px;background:#FFCDD2;border-radius:4px"></div> Ocupada (5)</div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:0.82rem"><div style="width:14px;height:14px;background:#FFCC02;border-radius:4px"></div> Reservada (3)</div>
+    </div>
+
+    <div class="mesas-grid">
+      <div class="mesa-card ocupada" onclick="openModal('modal-mesa-pedido')">
+        <div class="mesa-icon">🪑</div>
+        <div class="mesa-num">Mesa 1</div>
+        <div class="mesa-estado">Ocupada</div>
+        <div class="mesa-info">4 personas · S/. 72</div>
+      </div>
+      <div class="mesa-card libre" onclick="showToast('Mesa 2 libre — puedes asignar clientes')">
+        <div class="mesa-icon">🪑</div>
+        <div class="mesa-num">Mesa 2</div>
+        <div class="mesa-estado">Libre</div>
+        <div class="mesa-info">Disponible</div>
+      </div>
+      <div class="mesa-card ocupada" onclick="openModal('modal-mesa-pedido')">
+        <div class="mesa-icon">🪑</div>
+        <div class="mesa-num">Mesa 3</div>
+        <div class="mesa-estado">Ocupada</div>
+        <div class="mesa-info">2 personas · S/. 34</div>
+      </div>
+      <div class="mesa-card reservada" onclick="showToast('Mesa 4 — Reserva: Jorge Medina 19:00h')">
+        <div class="mesa-icon">🪑</div>
+        <div class="mesa-num">Mesa 4</div>
+        <div class="mesa-estado">Reservada</div>
+        <div class="mesa-info">Jorge M. · 19:00h</div>
+      </div>
+      <div class="mesa-card libre">
+        <div class="mesa-icon">🪑</div>
+        <div class="mesa-num">Mesa 5</div>
+        <div class="mesa-estado">Libre</div>
+        <div class="mesa-info">Disponible</div>
+      </div>
+      <div class="mesa-card ocupada" onclick="openModal('modal-mesa-pedido')">
+        <div class="mesa-icon">🪑</div>
+        <div class="mesa-num">Mesa 6</div>
+        <div class="mesa-estado">Ocupada</div>
+        <div class="mesa-info">6 personas · S/. 148</div>
+      </div>
+      <div class="mesa-card libre">
+        <div class="mesa-icon">🪑</div>
+        <div class="mesa-num">Mesa 7</div>
+        <div class="mesa-estado">Libre</div>
+        <div class="mesa-info">Disponible</div>
+      </div>
+      <div class="mesa-card reservada" onclick="showToast('Mesa 8 — Reserva: Ana Flores 20:00h')">
+        <div class="mesa-icon">🪑</div>
+        <div class="mesa-num">Mesa 8</div>
+        <div class="mesa-estado">Reservada</div>
+        <div class="mesa-info">Ana F. · 20:00h</div>
+      </div>
+      <div class="mesa-card ocupada" onclick="openModal('modal-mesa-pedido')">
+        <div class="mesa-icon">🪑</div>
+        <div class="mesa-num">Mesa 9</div>
+        <div class="mesa-estado">Ocupada</div>
+        <div class="mesa-info">3 personas · S/. 56</div>
+      </div>
+      <div class="mesa-card libre">
+        <div class="mesa-icon">🪑</div>
+        <div class="mesa-num">Mesa 10</div>
+        <div class="mesa-estado">Libre</div>
+        <div class="mesa-info">Disponible</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DÉBITOS ===== -->
+  <div id="debitos" class="page">
+    <div class="page-header">
+      <div>
+        <h2>Control de Débitos</h2>
+        <p>Cuentas por cobrar a clientes — Mayo 2026</p>
+      </div>
+      <button class="btn btn-gold" onclick="openModal('modal-debito')">+ Registrar Deuda</button>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card red"><div class="stat-icon">💳</div><div class="stat-num">S/. 340</div><div class="stat-label">Total por cobrar</div></div>
+      <div class="stat-card gold"><div class="stat-icon">👥</div><div class="stat-num">4</div><div class="stat-label">Clientes con deuda</div></div>
+      <div class="stat-card green"><div class="stat-icon">✅</div><div class="stat-num">S/. 820</div><div class="stat-label">Cobrado este mes</div></div>
+      <div class="stat-card orange"><div class="stat-icon">⚠️</div><div class="stat-num">1</div><div class="stat-label">Deuda +30 días</div></div>
+    </div>
+
+    <div class="card">
+      <h3>💳 Clientes con saldo pendiente</h3>
+      <div>
+        <div class="debito-item">
+          <div class="debito-avatar">MG</div>
+          <div class="debito-info">
+            <strong>María García</strong>
+            <p>Último consumo: 15 Mayo · 8 visitas este mes</p>
+          </div>
+          <div>
+            <div class="debito-amount">S/. 85.00</div>
+            <div class="debito-days">Desde: 10 Mayo</div>
+          </div>
+          <button class="pay-btn" onclick="showToast('Pago de María García registrado ✅')">✓ Cobrar</button>
+        </div>
+        <div class="debito-item">
+          <div class="debito-avatar">CR</div>
+          <div class="debito-info">
+            <strong>Carlos Ramos</strong>
+            <p>Último consumo: 18 Mayo · 12 visitas este mes</p>
+          </div>
+          <div>
+            <div class="debito-amount">S/. 120.00</div>
+            <div class="debito-days">Desde: 5 Mayo</div>
+          </div>
+          <button class="pay-btn" onclick="showToast('Pago de Carlos Ramos registrado ✅')">✓ Cobrar</button>
+        </div>
+        <div class="debito-item">
+          <div class="debito-avatar" style="background:linear-gradient(135deg,var(--red),#8B1A1A)">JM</div>
+          <div class="debito-info">
+            <strong>Jorge Medina</strong>
+            <p>Último consumo: 18 Abril · Deuda más antigua</p>
+          </div>
+          <div>
+            <div class="debito-amount" style="color:#8B0000">S/. 95.00 ⚠️</div>
+            <div class="debito-days" style="color:var(--red)">+30 días pendiente</div>
+          </div>
+          <button class="pay-btn" onclick="showToast('Recordatorio enviado a Jorge Medina por WhatsApp 💬')">📱 Recordar</button>
+        </div>
+        <div class="debito-item">
+          <div class="debito-avatar">RH</div>
+          <div class="debito-info">
+            <strong>Rosa Huamán</strong>
+            <p>Último consumo: 19 Mayo · Cliente frecuente</p>
+          </div>
+          <div>
+            <div class="debito-amount">S/. 40.00</div>
+            <div class="debito-days">Desde: 19 Mayo</div>
+          </div>
+          <button class="pay-btn" onclick="showToast('Pago de Rosa Huamán registrado ✅')">✓ Cobrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== FIDELIDAD ===== -->
+  <div id="fidelidad" class="page">
+    <div class="page-header">
+      <div>
+        <h2>Plan de Fidelidad</h2>
+        <p>¡Ven 10 días seguidos y gana un almuerzo gratis! 🎁</p>
+      </div>
+      <button class="btn btn-gold" onclick="openModal('modal-cliente')">+ Registrar Cliente</button>
+    </div>
+
+    <div class="fidelidad-hero">
+      <div style="font-size:2.5rem;margin-bottom:12px">🏆</div>
+      <h3>Plan de Fidelidad — Restaurante de Daniel</h3>
+      <p>Visítanos <strong>10 días</strong> en el mes y te regalamos <strong>1 almuerzo completo gratis</strong></p>
+      <div class="prize">
+        🎁 Premio: Menú del día completo · Entrada + Fondo + Bebida + Postre
+        <br><span style="font-size:0.82rem;opacity:0.8;margin-top:4px;display:block">Valor: S/. 13.00 · No acumulable · Válido el mes siguiente</span>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h3>🌟 Clientes del mes — Mayo 2026</h3>
+        <div>
+          <div class="cliente-fidelidad">
+            <div class="fid-avatar">MG</div>
+            <div class="fid-info">
+              <strong>María García</strong>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:90%"></div>
+              </div>
+              <div class="fid-days">9/10 días — ¡Falta 1 día!</div>
+            </div>
+            <span class="fid-badge gold">🔥 Casi Premio</span>
+          </div>
+          <div class="cliente-fidelidad">
+            <div class="fid-avatar" style="background:linear-gradient(135deg,#27AE60,#1A7A42)">CR</div>
+            <div class="fid-info">
+              <strong>Carlos Ramos</strong>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:100%"></div>
+              </div>
+              <div class="fid-days">✅ 10/10 días — ¡Premio ganado!</div>
+            </div>
+            <span class="fid-badge premio">🎁 Premio</span>
+          </div>
+          <div class="cliente-fidelidad">
+            <div class="fid-avatar">RH</div>
+            <div class="fid-info">
+              <strong>Rosa Huamán</strong>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:70%"></div>
+              </div>
+              <div class="fid-days">7/10 días</div>
+            </div>
+            <span class="fid-badge gold">⭐ En curso</span>
+          </div>
+          <div class="cliente-fidelidad">
+            <div class="fid-avatar">AT</div>
+            <div class="fid-info">
+              <strong>Ana Torres</strong>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:50%"></div>
+              </div>
+              <div class="fid-days">5/10 días</div>
+            </div>
+            <span class="fid-badge" style="background:#E3F2FD;color:#1565C0">⭐ En curso</span>
+          </div>
+          <div class="cliente-fidelidad">
+            <div class="fid-avatar">JP</div>
+            <div class="fid-info">
+              <strong>Juan Pérez</strong>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width:30%"></div>
+              </div>
+              <div class="fid-days">3/10 días</div>
+            </div>
+            <span class="fid-badge" style="background:#F3E5F5;color:#7B1FA2">⭐ Nuevo</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📊 Estadísticas del plan</h3>
+        <div style="display:flex;flex-direction:column;gap:14px;margin-top:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:0.88rem">Clientes inscritos</span>
+            <strong style="color:var(--gold)">38 clientes</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:0.88rem">Premios otorgados (Mayo)</span>
+            <strong style="color:var(--green)">3 almuerzos</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:0.88rem">Clientes con 10+ días</span>
+            <strong style="color:var(--orange)">1 cliente</strong>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span style="font-size:0.88rem">Próximos a ganar</span>
+            <strong style="color:var(--red)">1 cliente</strong>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <h3>🎁 Premios pendientes de usar</h3>
+        <div style="background:linear-gradient(135deg,#D4EDDA,#C3E6CB);border-radius:12px;padding:14px;margin-top:8px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="font-size:2rem">🎉</div>
+            <div>
+              <strong style="color:#155724">Carlos Ramos</strong>
+              <p style="font-size:0.78rem;color:#1e7e34;margin-top:2px">1 almuerzo gratis disponible — válido todo Mayo</p>
+            </div>
+            <button class="btn btn-green" style="margin-left:auto;padding:6px 14px;font-size:0.78rem" onclick="showToast('Premio de Carlos Ramos canjeado! 🎁')">Canjear</button>
+          </div>
+        </div>
+        <div style="margin-top:14px;background:var(--cream);border-radius:12px;padding:14px;border:1px dashed rgba(200,150,12,0.3)">
+          <p style="font-size:0.82rem;color:#9C7A40;text-align:center">
+            💡 Registra la visita diaria de cada cliente<br>para llevar el control automático
+          </p>
+          <button class="btn btn-gold" style="width:100%;justify-content:center;margin-top:10px" onclick="openModal('modal-visita')">✓ Registrar visita del día</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ===== TICKETS ===== -->
+  <div id="tickets" class="page">
+    <div class="page-header">
+      <div>
+        <h2>Imprimir Ticket</h2>
+        <p>Genera e imprime comprobantes para tus clientes</p>
+      </div>
+      <button class="btn btn-gold" onclick="imprimirTicket()">🖨️ Imprimir Ahora</button>
+    </div>
+
+    <div class="grid-2" style="align-items:start">
+      <!-- FORMULARIO -->
+      <div class="card">
+        <h3>📝 Datos del pedido</h3>
+
+        <div class="form-group" style="margin-top:12px">
+          <label>Tipo de comprobante</label>
+          <select id="tk-tipo" onchange="actualizarTicket()">
+            <option value="boleta">Boleta de Venta</option>
+            <option value="nota">Nota de Pedido</option>
+            <option value="delivery">Comprobante Delivery</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Nº de Pedido</label>
+          <input type="text" id="tk-num" value="#048" oninput="actualizarTicket()">
+        </div>
+        <div class="form-group">
+          <label>Cliente</label>
+          <input type="text" id="tk-cliente" value="María García" oninput="actualizarTicket()">
+        </div>
+        <div class="form-group">
+          <label>Mozo / Mesa</label>
+          <input type="text" id="tk-mesa" value="Mesa 1 — Juan" oninput="actualizarTicket()">
+        </div>
+
+        <div style="border:1.5px solid rgba(200,150,12,0.2);border-radius:12px;padding:14px;margin-bottom:16px">
+          <div style="font-weight:600;color:var(--brown);font-size:0.88rem;margin-bottom:10px">Productos del pedido:</div>
+          <div id="productos-lista">
+            <div class="prod-row" style="display:flex;gap:8px;margin-bottom:8px">
+              <input type="text" placeholder="Producto" style="flex:2;padding:7px 10px;border:1px solid rgba(200,150,12,0.25);border-radius:8px;font-family:Outfit,sans-serif;font-size:0.82rem;background:var(--cream)" value="Lomo Saltado" oninput="actualizarTicket()">
+              <input type="number" placeholder="Cant" style="flex:0.5;padding:7px 10px;border:1px solid rgba(200,150,12,0.25);border-radius:8px;font-family:Outfit,sans-serif;font-size:0.82rem;background:var(--cream)" value="2" oninput="actualizarTicket()">
+              <input type="number" placeholder="S/." style="flex:0.8;padding:7px 10px;border:1px solid rgba(200,150,12,0.25);border-radius:8px;font-family:Outfit,sans-serif;font-size:0.82rem;background:var(--cream)" value="18.00" oninput="actualizarTicket()">
+            </div>
+            <div class="prod-row" style="display:flex;gap:8px;margin-bottom:8px">
+              <input type="text" placeholder="Producto" style="flex:2;padding:7px 10px;border:1px solid rgba(200,150,12,0.25);border-radius:8px;font-family:Outfit,sans-serif;font-size:0.82rem;background:var(--cream)" value="Chicha Morada" oninput="actualizarTicket()">
+              <input type="number" placeholder="Cant" style="flex:0.5;padding:7px 10px;border:1px solid rgba(200,150,12,0.25);border-radius:8px;font-family:Outfit,sans-serif;font-size:0.82rem;background:var(--cream)" value="2" oninput="actualizarTicket()">
+              <input type="number" placeholder="S/." style="flex:0.8;padding:7px 10px;border:1px solid rgba(200,150,12,0.25);border-radius:8px;font-family:Outfit,sans-serif;font-size:0.82rem;background:var(--cream)" value="5.00" oninput="actualizarTicket()">
+            </div>
+          </div>
+          <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:6px;padding:7px" onclick="agregarProducto()">+ Agregar producto</button>
+        </div>
+
+        <div class="form-group">
+          <label>Método de pago</label>
+          <select id="tk-pago" onchange="actualizarTicket()">
+            <option>Efectivo</option>
+            <option>Yape / Plin</option>
+            <option>Tarjeta</option>
+            <option>A crédito</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Observaciones</label>
+          <input type="text" id="tk-obs" placeholder="Sin cebolla, etc." oninput="actualizarTicket()">
+        </div>
+
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-outline" style="flex:1;justify-content:center" onclick="actualizarTicket()">🔄 Actualizar vista</button>
+          <button class="btn btn-gold" style="flex:1;justify-content:center" onclick="imprimirTicket()">🖨️ Imprimir</button>
+        </div>
+      </div>
+
+      <!-- VISTA PREVIA TICKET -->
+      <div>
+        <div style="text-align:center;font-size:0.82rem;color:#9C7A40;margin-bottom:12px;font-weight:600">VISTA PREVIA DEL TICKET</div>
+        <div id="print-area">
+          <div class="ticket-preview" id="ticket-visual">
+            <div class="tk-logo">🍽️</div>
+            <div class="tk-title">RESTAURANTE DE DANIEL</div>
+            <div class="tk-sub">Lima, Perú · +51 913 891 049<br>RUC: 10412345678</div>
+            <div class="tk-divider"></div>
+            <div class="tk-line"><span>Comprobante:</span><span id="tv-tipo">Boleta de Venta</span></div>
+            <div class="tk-line"><span>Nº Pedido:</span><span id="tv-num">#048</span></div>
+            <div class="tk-line"><span>Fecha:</span><span>19/05/2026 12:34</span></div>
+            <div class="tk-line"><span>Cliente:</span><span id="tv-cliente">María García</span></div>
+            <div class="tk-line"><span>Mesa/Mozo:</span><span id="tv-mesa">Mesa 1 — Juan</span></div>
+            <div class="tk-divider"></div>
+            <div style="font-weight:700;font-size:0.78rem;margin-bottom:6px">DETALLE:</div>
+            <div id="tv-items">
+              <div class="tk-line"><span>2x Lomo Saltado</span><span>S/. 36.00</span></div>
+              <div class="tk-line"><span>2x Chicha Morada</span><span>S/. 10.00</span></div>
+            </div>
+            <div class="tk-divider"></div>
+            <div class="tk-line"><span>Subtotal:</span><span id="tv-sub">S/. 46.00</span></div>
+            <div class="tk-line"><span>IGV (18%):</span><span id="tv-igv">S/. 8.28</span></div>
+            <div class="tk-line tk-total"><span>TOTAL:</span><span id="tv-total">S/. 54.28</span></div>
+            <div class="tk-divider"></div>
+            <div class="tk-line"><span>Pago:</span><span id="tv-pago">Efectivo</span></div>
+            <div id="tv-obs-row" class="tk-line"><span>Obs:</span><span id="tv-obs"></span></div>
+            <div class="tk-footer">
+              ¡Gracias por su visita!<br>
+              Vuelva pronto 😊<br><br>
+              🏆 Plan Fidelidad: ¡Ven 10 días<br>y gana un almuerzo gratis!
+            </div>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:16px">
+          <button class="btn btn-gold" onclick="imprimirTicket()" style="padding:12px 32px;font-size:1rem">🖨️ Imprimir Ticket</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== REPORTE MENSUAL ===== -->
+  <div id="reporte" class="page">
+    <div class="page-header">
+      <div>
+        <h2>Reporte Mensual</h2>
+        <p>Resumen completo de Mayo 2026</p>
+      </div>
+      <div style="display:flex;gap:10px">
+        <select class="btn btn-outline" style="cursor:pointer">
+          <option>Mayo 2026</option>
+          <option>Abril 2026</option>
+          <option>Marzo 2026</option>
+        </select>
+        <button class="btn btn-gold" onclick="showToast('Reporte PDF generado y descargado! 📄')">📥 Exportar PDF</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="reporte-kpi">
+      <div class="kpi-box">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-val">S/. 28,450</div>
+        <div class="kpi-lbl">Ventas totales del mes</div>
+        <div class="kpi-trend up">▲ +22% vs Abril</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-icon">🛵</div>
+        <div class="kpi-val">347</div>
+        <div class="kpi-lbl">Pedidos delivery</div>
+        <div class="kpi-trend up">▲ +15% vs Abril</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-icon">🪑</div>
+        <div class="kpi-val">892</div>
+        <div class="kpi-lbl">Comensales en local</div>
+        <div class="kpi-trend up">▲ +8% vs Abril</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-icon">🍽️</div>
+        <div class="kpi-val">1,847</div>
+        <div class="kpi-lbl">Platos servidos</div>
+        <div class="kpi-trend up">▲ +18% vs Abril</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-icon">💳</div>
+        <div class="kpi-val">S/. 340</div>
+        <div class="kpi-lbl">Débitos pendientes</div>
+        <div class="kpi-trend down">▼ -12% vs Abril</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-icon">🏆</div>
+        <div class="kpi-val">3</div>
+        <div class="kpi-lbl">Premios fidelidad otorgados</div>
+        <div class="kpi-trend up">38 clientes activos</div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:20px">
+      <!-- GRÁFICO VENTAS -->
+      <div class="card">
+        <h3>📈 Ventas diarias — Mayo 2026</h3>
+        <div class="bar-chart" style="margin-top:16px">
+          <div class="bar-wrap"><div class="bar-val">820</div><div class="bar-col" style="height:58%"></div><div class="bar-label">1</div></div>
+          <div class="bar-wrap"><div class="bar-val">950</div><div class="bar-col" style="height:67%"></div><div class="bar-label">2</div></div>
+          <div class="bar-wrap"><div class="bar-val">760</div><div class="bar-col" style="height:54%"></div><div class="bar-label">5</div></div>
+          <div class="bar-wrap"><div class="bar-val">1100</div><div class="bar-col" style="height:78%"></div><div class="bar-label">6</div></div>
+          <div class="bar-wrap"><div class="bar-val">880</div><div class="bar-col" style="height:62%"></div><div class="bar-label">7</div></div>
+          <div class="bar-wrap"><div class="bar-val">1380</div><div class="bar-col" style="height:98%;background:linear-gradient(180deg,#FFD700,var(--gold))"></div><div class="bar-label">8</div></div>
+          <div class="bar-wrap"><div class="bar-val">920</div><div class="bar-col" style="height:65%"></div><div class="bar-label">9</div></div>
+          <div class="bar-wrap"><div class="bar-val">1050</div><div class="bar-col" style="height:74%"></div><div class="bar-label">12</div></div>
+          <div class="bar-wrap"><div class="bar-val">870</div><div class="bar-col" style="height:61%"></div><div class="bar-label">13</div></div>
+          <div class="bar-wrap"><div class="bar-val">990</div><div class="bar-col" style="height:70%"></div><div class="bar-label">14</div></div>
+          <div class="bar-wrap"><div class="bar-val">1120</div><div class="bar-col" style="height:79%"></div><div class="bar-label">15</div></div>
+          <div class="bar-wrap"><div class="bar-val">1284</div><div class="bar-col highlight" style="height:91%"></div><div class="bar-label">19🔴</div></div>
+        </div>
+        <div style="font-size:0.72rem;color:#9C7A40;text-align:center;margin-top:8px">🔴 Hoy · 🟡 Mejor día del mes</div>
+      </div>
+
+      <!-- TOP PLATOS -->
+      <div class="card">
+        <h3>⭐ Platos más vendidos</h3>
+        <div class="top-platos" style="margin-top:12px">
+          <div class="top-plato-item">
+            <div class="top-plato-rank rank-1">1</div>
+            <div class="top-plato-info">
+              <strong>Lomo Saltado</strong>
+              <div class="top-plato-bar"><div class="top-plato-bar-fill" style="width:100%"></div></div>
+            </div>
