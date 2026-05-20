@@ -494,11 +494,52 @@
   }
   .wa-float:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(37,211,102,0.5); }
 
-  /* RESPONSIVE */
+  /* RESPONSIVE TABLET */
   @media (max-width: 900px) {
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
     .especiales-grid { grid-template-columns: repeat(2, 1fr); }
     .mesas-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  /* RESPONSIVE MOBILE */
+  @media (max-width: 600px) {
+    .sidebar {
+      position: fixed; bottom: 0; top: auto; left: 0; right: 0; width: 100%;
+      height: 64px; flex-direction: row; z-index: 100;
+      box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+    }
+    .sidebar-logo { display: none; }
+    .sidebar-bottom { display: none; }
+    .nav {
+      display: flex; flex-direction: row;
+      padding: 0; overflow-x: auto; overflow-y: hidden;
+      width: 100%; align-items: center;
+    }
+    .nav-item {
+      flex-direction: column; padding: 8px 10px;
+      font-size: 0.6rem; border-left: none;
+      border-top: 3px solid transparent;
+      min-width: 60px; text-align: center; gap: 2px;
+    }
+    .nav-item.active { border-left: none; border-top-color: var(--gold); }
+    .nav-item .nav-icon { font-size: 1.2rem; width: auto; }
+    .main { margin-left: 0; padding: 12px 10px 80px; }
+    .top-bar { margin: -12px -10px 14px; padding: 10px 12px; }
+    .top-bar .greeting { font-size: 0.76rem; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .grid-3 { grid-template-columns: 1fr; }
+    .especiales-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .mesas-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .reporte-kpi { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .page-header { flex-direction: column; gap: 10px; align-items: flex-start; }
+    .stat-num { font-size: 1.5rem; }
+    .wa-float { left: 14px; bottom: 80px; }
+    .modal { padding: 18px; max-width: 100%; width: 95%; }
+    .ticket-preview { max-width: 100%; }
+    .menu-courses { flex-direction: column; gap: 10px; }
+    .order-item { flex-wrap: wrap; gap: 8px; }
+    .nav-badge { font-size: 0.6rem; padding: 1px 5px; }
   }
 
   .section-title-bar {
@@ -1503,26 +1544,4 @@
           <div class="bar-wrap"><div class="bar-val">950</div><div class="bar-col" style="height:67%"></div><div class="bar-label">2</div></div>
           <div class="bar-wrap"><div class="bar-val">760</div><div class="bar-col" style="height:54%"></div><div class="bar-label">5</div></div>
           <div class="bar-wrap"><div class="bar-val">1100</div><div class="bar-col" style="height:78%"></div><div class="bar-label">6</div></div>
-          <div class="bar-wrap"><div class="bar-val">880</div><div class="bar-col" style="height:62%"></div><div class="bar-label">7</div></div>
-          <div class="bar-wrap"><div class="bar-val">1380</div><div class="bar-col" style="height:98%;background:linear-gradient(180deg,#FFD700,var(--gold))"></div><div class="bar-label">8</div></div>
-          <div class="bar-wrap"><div class="bar-val">920</div><div class="bar-col" style="height:65%"></div><div class="bar-label">9</div></div>
-          <div class="bar-wrap"><div class="bar-val">1050</div><div class="bar-col" style="height:74%"></div><div class="bar-label">12</div></div>
-          <div class="bar-wrap"><div class="bar-val">870</div><div class="bar-col" style="height:61%"></div><div class="bar-label">13</div></div>
-          <div class="bar-wrap"><div class="bar-val">990</div><div class="bar-col" style="height:70%"></div><div class="bar-label">14</div></div>
-          <div class="bar-wrap"><div class="bar-val">1120</div><div class="bar-col" style="height:79%"></div><div class="bar-label">15</div></div>
-          <div class="bar-wrap"><div class="bar-val">1284</div><div class="bar-col highlight" style="height:91%"></div><div class="bar-label">19🔴</div></div>
-        </div>
-        <div style="font-size:0.72rem;color:#9C7A40;text-align:center;margin-top:8px">🔴 Hoy · 🟡 Mejor día del mes</div>
-      </div>
-
-      <!-- TOP PLATOS -->
-      <div class="card">
-        <h3>⭐ Platos más vendidos</h3>
-        <div class="top-platos" style="margin-top:12px">
-          <div class="top-plato-item">
-            <div class="top-plato-rank rank-1">1</div>
-            <div class="top-plato-info">
-              <strong>Lomo Saltado</strong>
-              <div class="top-plato-bar"><div class="top-plato-bar-fill" style="width:100%"></div></div>
-            </div>
-           
+          <div class="bar-wrap"><div class
